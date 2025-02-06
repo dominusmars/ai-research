@@ -1,6 +1,6 @@
-import ollama, { ChatResponse, Ollama } from "ollama";
-import events from "events";
+import ollama, { ChatRequest, ChatResponse, Ollama } from "ollama";
 const ollamaHost = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+
 
 class Bot {
   private client: Ollama;
@@ -14,15 +14,8 @@ class Bot {
     this.model = model;
     this.name = name;
   }
-  private log(message: string) {
-    const m = `[${this.name}] [${new Date().toISOString()}] ${message}`.replace(
-      /[\r\n]+/g,
-      "",
-    );
-    console.log(m);
-  }
-
-  private createRequest(query: string) {
+ 
+  private createRequest(query: string): ChatRequest {
     return {
       model: this.model,
       messages: [{ role: "user", content: query }],
@@ -30,14 +23,10 @@ class Bot {
   }
   public async getResponse(query: string) {
     const request = this.createRequest(query);
-    const response = await this.client.chat(request);
-    this.responses.push(response);
-    this.log(response.message.content);
+    const response = this.client.chat( {...request, stream: true});
     return response;
   }
-  public getResponses() {
-    return this.responses;
-  }
+  
 }
 
 export default Bot;
