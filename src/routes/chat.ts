@@ -6,6 +6,7 @@ router.use("/", (request: Request, response: Response) => {
     response.setHeader('Content-Type', 'text/event-stream');
     response.setHeader('Cache-Control', 'no-cache');
     response.setHeader('Connection', 'keep-alive');
+    response.flushHeaders();
 
     const sendEvent = (data: any) => {
       if (typeof data === 'object') {

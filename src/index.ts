@@ -1,6 +1,6 @@
 import express from "express";
 import { Request, Response } from "express";
-import current from "./routes/current";
+import current from "./routes/chat";
 import path from 'path';
 
 
