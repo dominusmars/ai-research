@@ -1,105 +1,142 @@
 import { ChatResponse } from "ollama";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useRef,
+  RefObject,
+  use,
+} from "react";
 import { useEffect } from "react";
 export type ChatHistory = {
-    message: string;
-    created_at: Date;
+  content: string;
+  created_at: Date;
+};
+type Chat = {
+  queue: {
+    [bot_name: string]: ChatResponse[];
+  };
+  history: {
+    [bot_name: string]: ChatHistory[];
+  };
 };
 
 interface ChatContextType {
-    history: { [bot_name: string]: ChatHistory[] };
-    currentQueue: { [bot_name: string]: ChatResponse[] };
+  chat: Chat;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 type botTag = {
-    name: string;
+  name: string;
 };
 
 type PlayfieldEventResponse = ChatResponse & botTag;
 
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({
-    children,
+  children,
 }) => {
-    const [history, setHistory] = useState<{
-        [bot_name: string]: ChatHistory[];
-    }>({});
+  const [chat, setChat] = useState<Chat>({
+    queue: {},
+    history: {},
+  });
 
-    const [currentQueue, setCurrentQueue] = useState<{
-        [bot_name: string]: ChatResponse[];
-    }>({});
+  useEffect(() => {
+    const eventSource = new EventSource("http://localhost:3000/chat");
+    eventSource.addEventListener("response", (event: MessageEvent) => {
+      const data = JSON.parse(event.data) as PlayfieldEventResponse;
+      addMessage(data);
+    });
+    eventSource.addEventListener("error", (event: MessageEvent) => {
+      console.error("EventSource failed:", event);
+    });
 
-    useEffect(() => {
-        const eventSource = new EventSource("http://localhost:3000/chat");
-        eventSource.addEventListener("response", (event: MessageEvent) => {
-            const data = JSON.parse(event.data) as PlayfieldEventResponse;
-            addMessage(data);
-        });
+    // terminating the connection on component unmount
+    return () => eventSource.close();
+  }, []);
 
-        // terminating the connection on component unmount
-        return () => eventSource.close();
-    }, []);
-
-    const addMessage = (message: PlayfieldEventResponse) => {
-        if (message.done) {
-            let combinedMessage = "";
-
-            // figure out a way to get message from currentQueue to history when its done streaming down
-            setCurrentQueue((prev) => {
-                const new_queue = { ...prev };
-                if (!new_queue[message.name]) {
-                    new_queue[message.name] = [];
-                }
-                new_queue[message.name] = [...new_queue[message.name], message];
-                combinedMessage = new_queue[message.name].reduce(
-                    (prev, m) => prev + m.message.content,
-                    "",
-                );
-                console.log("message done:", combinedMessage, message.name);
-
-                new_queue[message.name] = [];
-                return new_queue;
-            });
-            setHistory((prev) => {
-
-                const new_history = { ...prev };
-                if (!new_history[message.name]) {
-                    new_history[message.name] = [];
-                }
-                new_history[message.name] = [
-                    ...new_history[message.name],
-                    {
-                        message: combinedMessage,
-                        created_at: message.created_at,
-                    },
-                ];
-                return new_history;
-            });
-            return;
-        }
-        setCurrentQueue((prev) => {
-            const new_queue = { ...prev };
-            if (!new_queue[message.name]) {
-                new_queue[message.name] = [];
-            }
-            new_queue[message.name] = [...new_queue[message.name], message];
-
-            return new_queue;
-        });
+  useEffect(() => {
+    const getHistory = async () => {
+      const response = await fetch("/chat/history");
+      if (!response.ok) {
+        console.log("Unable to fetch chat history");
+        return;
+      }
+      const data = await response.json();
+      setChat((prev) => {
+        return {
+          ...prev,
+          history: data,
+        };
+      });
     };
 
-    return (
-        <ChatContext.Provider value={{ currentQueue, history }}>
-            {children}
-        </ChatContext.Provider>
-    );
+    getHistory();
+  }, []);
+
+  const addMessage = (message: PlayfieldEventResponse) => {
+    if (message.done) {
+      setChat((prev) => {
+        if (!prev.queue[message.name]) {
+          prev.queue[message.name] = [];
+        }
+        let m = prev.queue[message.name].reduce(
+          (p, res) => p + res.message.content,
+          "",
+        );
+        m += message.message.content;
+
+        return {
+          queue: {
+            ...prev.queue,
+            [message.name]: [],
+          },
+          history: {
+            ...prev.history,
+            [message.name]: prev.history[message.name]
+              ? [
+                  ...prev.history[message.name],
+                  {
+                    content: m,
+                    created_at: message.created_at,
+                  },
+                ]
+              : [
+                  {
+                    content: m,
+                    created_at: message.created_at,
+                  },
+                ],
+          },
+        };
+      });
+      return;
+    }
+    setChat((prev) => {
+      return {
+        queue: {
+          ...prev.queue,
+          [message.name]: prev.queue[message.name]
+            ? [...prev.queue[message.name], message]
+            : [message],
+        },
+        history: {
+          ...prev.history,
+        },
+      };
+    });
+  };
+
+  return (
+    <ChatContext.Provider value={{ chat }}>{children}</ChatContext.Provider>
+  );
 };
 
 export const useChat = (): ChatContextType => {
-    const context = useContext(ChatContext);
-    if (!context) {
-        throw new Error("useChat must be used within a ChatProvider");
-    }
-    return context;
+  const context = useContext(ChatContext);
+  if (!context) {
+    throw new Error("useChat must be used within a ChatProvider");
+  }
+  return context;
 };

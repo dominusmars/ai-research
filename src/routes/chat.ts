@@ -1,8 +1,18 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, request } from "express";
 import { playfield } from "../utils/playfield";
 const router = Router();
 
-router.use("/", (request: Request, response: Response) => {
+router.get("/bots", (request: Request, response: Response) => {
+  response.json(playfield.getBotInfo());
+});
+router.get("/history", (request: Request, response: Response) => {
+  response.json(playfield.getHistory());
+});
+router.get("/messages", (request: Request, response: Response) => {
+  response.json(playfield.getMessages());
+});
+
+router.get("/", (request: Request, response: Response) => {
   response.setHeader("Content-Type", "text/event-stream");
   response.setHeader("Cache-Control", "no-cache");
   response.setHeader("Connection", "keep-alive");
@@ -27,11 +37,6 @@ router.use("/", (request: Request, response: Response) => {
     playfield.events.removeListener("error", sendError);
     response.end();
   });
-});
-router.use("/ws", (request: Request, response: Response) => {});
-
-router.use("/:bot", (request: Request, response: Response) => {
-  const { bot } = request.params;
 });
 
 export default router;
