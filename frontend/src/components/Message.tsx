@@ -11,10 +11,12 @@ import rehypeHighlight from "rehype-highlight";
 import "katex/dist/katex.min.css"; // For math rendering
 import "highlight.js/styles/github-dark.css";
 import { format } from "date-fns";
+import ErrorBoundary from "@context/ErrorBoundaries";
 type MessageProps = {
   message: string;
   created_at: Date;
   pending?: boolean;
+  done?: boolean;
 };
 
 const Message: React.FC<MessageProps> = ({ message, created_at, pending }) => {
@@ -28,21 +30,25 @@ const Message: React.FC<MessageProps> = ({ message, created_at, pending }) => {
       clearInterval(interval);
     };
   }, []);
+
   return (
     <div className="p-2 rounded-lg bg-gray-800 text-white mb-2">
       <div>Created at: {format(new Date(created_at), "PPPppp")}</div>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
-        rehypePlugins={[
-          rehypeKatex as any,
-          rehypeMathjax,
-          rehypeRaw,
-          rehypeHighlight,
-        ]}
-      >
-        {message + (showCursor ? "█" : "")}
-      </ReactMarkdown>
-      {/* <pre className="text-wrap"> {} </pre> */}
+      <ErrorBoundary>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+          rehypePlugins={[
+            rehypeKatex as any,
+            rehypeMathjax,
+            rehypeRaw,
+            rehypeHighlight,
+          ]}
+          skipHtml
+
+        >
+          {message + (showCursor ? "█" : "")}
+        </ReactMarkdown>
+      </ErrorBoundary>
     </div>
   );
 };

@@ -6,11 +6,12 @@ import Chat from "@components/Chat";
 type Bot = {
   name: string;
   model: string;
+  context: string;
 };
 
 type Props = {};
 
-function Home({}: Props) {
+function Home({ }: Props) {
   const { chat } = useChat();
   const [scrolling, setScrolling] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -57,6 +58,7 @@ function Home({}: Props) {
           return (
             <Chat
               bot_name={bot.name + " " + bot.model}
+              context={bot.context}
               history={chat.history[bot.name]}
               currentQueue={chat.queue[bot.name]}
               key={bot.name}
