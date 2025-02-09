@@ -49,6 +49,7 @@ router.get("/", (request: Request, response: Response) => {
     request.on("close", () => {
         playfield.events.removeListener("response", sendEvent);
         playfield.events.removeListener("error", sendError);
+        playfield.events.removeListener("reset", sendReset);
         response.end();
     });
 });
