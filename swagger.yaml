@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: Chat API
+  version: 1.0.0
+  description: API for managing chat bots and their messages
+servers:
+  - url: http://localhost:3000
+paths:
+  /chat/bots:
+    get:
+      tags:
+        - chat
+      summary: Get bot information
+      responses:
+        "200":
+          description: A list of bot information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    model:
+                      type: string
+                    context:
+                      type: string
+  /chat/history:
+    get:
+      tags:
+        - chat
+      summary: Get chat history
+      responses:
+        "200":
+          description: A list of chat history
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      total_duration:
+                        type: number
+                      created_at:
+                        type: number
+                      content:
+                        type: string
+                      role:
+                        type: string
+  /chat/messages:
+    get:
+      tags:
+        - chat
+      summary: Get recent messages
+      responses:
+        "200":
+          description: A list of recent messages
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      total_duration:
+                        type: number
+                      created_at:
+                        type: number
+                      content:
+                        type: string
+                      role:
+                        type: string
+  /chat/messages/all:
+    get:
+      tags:
+        - chat
+      summary: Get all messages
+      responses:
+        "200":
+          description: A list of all messages
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      total_duration:
+                        type: number
+                      created_at:
+                        type: number
+                      content:
+                        type: string
+                      role:
+                        type: string
+  /chat/reset:
+    get:
+      tags:
+        - chat
+      summary: Reset the playfield
+      responses:
+        "200":
+          description: Reset confirmation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /chat/:
+    get:
+      tags:
+        - chat
+      summary: Get server-sent events
+      responses:
+        "200":
+          description: Server-sent events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /:
+    get:
+      tags:
+        - page
+      summary: Home Page
+      responses:
+        "200":
+          description: Gives back Home Page
+          content:
+            text/html:
+              schema:
+                type: string

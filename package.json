@@ -12,17 +12,22 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "express": "^4.21.2",
+    "install": "^0.13.0",
     "morgan": "^1.10.0",
+    "npm": "^11.1.0",
     "ollama": "^0.5.12",
     "random-name": "^0.1.2",
     "sqlite3": "^5.1.7",
-    "webpack": "^5.97.1"
+    "swagger-ui-express": "^5.0.1",
+    "webpack": "^5.97.1",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
     "@types/random-name": "^0.1.2",
+    "@types/swagger-ui-express": "^4.1.7",
     "@types/webpack-hot-middleware": "^2.25.9",
     "ts-node": "^10.9.2",
     "webpack-dev-middleware": "^7.4.2",
