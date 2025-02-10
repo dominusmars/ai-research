@@ -38,17 +38,15 @@ function parseConfig(): Config {
 }
 function isValidCron(scheduleString: string) {
     try {
-        // node-schedule supports a subset of standard cron syntax
         const parts = scheduleString.split(" ");
 
         if (parts.length !== 5) {
-            return false; // node-schedule only supports 5-part cron syntax (not 6 or 7)
+            return false;
         }
 
-        // Try to schedule a dummy job to check validity
         const testJob = schedule.scheduleJob(scheduleString, () => {});
         if (testJob) {
-            testJob.cancel(); // Cleanup if it was valid
+            testJob.cancel();
             return true;
         }
 
