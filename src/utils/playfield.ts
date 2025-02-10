@@ -3,6 +3,8 @@ import Bot, { BotResponse, ChatHistory } from "./bot";
 import { EventEmitter } from "events";
 import random from "random-name";
 import config, { getRandModel, getRandContext, getRandPrompt } from "./config";
+import schedule from "node-schedule";
+import log from "./log";
 
 interface PlayfieldEvents {
     response: [BotResponse];
@@ -34,9 +36,18 @@ class Playfield {
                 this.bots[(i + 1) % this.bots.length].getResponse(message);
             });
         }
+
+        if (config.reset_job) {
+            log(`Setting reset job to ${config.reset_job}`, "info");
+            schedule.scheduleJob(config.reset_job, () => {
+                this.reset();
+            });
+        }
+
         this.start();
     }
     reset() {
+        log("Resetting bots", "info");
         for (let i = 0; i < this.bots.length; i++) {
             this.bots[i].delete();
         }

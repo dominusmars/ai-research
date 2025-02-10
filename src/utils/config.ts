@@ -1,11 +1,13 @@
 import config from "../../config.json";
-
+import log from "./log";
+import schedule from "node-schedule";
 type Config = {
     OLLAMA_HOST: string;
     models: string[];
     system_context: string[];
     bots: number;
     starting_prompts: string[];
+    reset_job: string;
 };
 
 function parseConfig(): Config {
@@ -24,7 +26,36 @@ function parseConfig(): Config {
     if (!config.starting_prompts) {
         throw new Error("starting_prompts is required in config.json");
     }
+
+    if (!config.reset_job) {
+        log("reset_job is not defined in config.json", "warn");
+    }
+    if (config.reset_job && !isValidCron(config.reset_job)) {
+        throw new Error("reset_job is not a valid cron schedule");
+    }
+
     return config;
+}
+function isValidCron(scheduleString: string) {
+    try {
+        // node-schedule supports a subset of standard cron syntax
+        const parts = scheduleString.split(" ");
+
+        if (parts.length !== 5) {
+            return false; // node-schedule only supports 5-part cron syntax (not 6 or 7)
+        }
+
+        // Try to schedule a dummy job to check validity
+        const testJob = schedule.scheduleJob(scheduleString, () => {});
+        if (testJob) {
+            testJob.cancel(); // Cleanup if it was valid
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        return false;
+    }
 }
 function getRandModel(): string {
     return config.models[Math.floor(Math.random() * config.models.length)];

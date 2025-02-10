@@ -33,5 +33,6 @@
         "Generate a fake but convincing tech startup idea.",
         "What’s the strangest bug you've ever encountered?"
     ],
-    "bots": 2
+    "bots": 2,
+    "reset_job": "* 13 * * *"
 }
