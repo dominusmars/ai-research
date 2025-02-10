@@ -11,7 +11,7 @@ import rehypeHighlight from "rehype-highlight";
 import "katex/dist/katex.min.css"; // For math rendering
 import "highlight.js/styles/github-dark.css";
 import { format } from "date-fns";
-import ErrorBoundary from "@context/ErrorBoundaries";
+import { ErrorBoundary } from "react-error-boundary";
 type MessageProps = {
   message: string;
   created_at: Date;
@@ -34,7 +34,7 @@ const Message: React.FC<MessageProps> = ({ message, created_at, pending }) => {
   return (
     <div className="p-2 rounded-lg bg-gray-800 text-white mb-2">
       <div>Created at: {format(new Date(created_at), "PPPppp")}</div>
-      <ErrorBoundary>
+      <ErrorBoundary fallback={<div className="p-4 text-red-700 bg-red-200 rounded-2xl">⚠️ Failed to Render Message</div>}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
           rehypePlugins={[
