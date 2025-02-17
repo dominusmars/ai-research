@@ -18,7 +18,7 @@
     "morgan": "^1.10.0",
     "node-schedule": "^2.1.1",
     "npm": "^11.1.0",
-    "ollama": "^0.5.12",
+    "ollama": "^0.5.13",
     "random-name": "^0.1.2",
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",

@@ -3,6 +3,7 @@ import schedule from "node-schedule";
 import fs from "fs";
 type Config = {
   OLLAMA_HOST: string;
+  OLLAMA_API_KEY: string;
   models: string[];
   system_context: string[];
   bots: number;
@@ -18,6 +19,9 @@ function parseConfig(): Config {
 
   if (!config.OLLAMA_HOST) {
     throw new Error("OLLAMA_HOST is required in config.json");
+  }
+  if (!config.OLLAMA_API_KEY) {
+    log("No api key set for Ollama", "warn");
   }
   if (!config.models) {
     throw new Error("models is required in config.json");

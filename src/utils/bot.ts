@@ -1,5 +1,9 @@
-import ollama, { ChatRequest, ChatResponse, Ollama } from "ollama";
-import { A } from "ollama/dist/shared/ollama.67ec3cf9";
+import ollama, {
+  ChatRequest,
+  ChatResponse,
+  Ollama,
+  AbortableAsyncIterator,
+} from "ollama";
 import { EventEmitter } from "events";
 import log from "./log";
 import db from "./db";
@@ -83,7 +87,9 @@ class Bot {
       return;
     }
   }
-  private async processRequest(response: Promise<A<ChatResponse>>) {
+  private async processRequest(
+    response: Promise<AbortableAsyncIterator<ChatResponse>>,
+  ) {
     const res = await response;
     for await (const data of res) {
       this.saveChat(data);
