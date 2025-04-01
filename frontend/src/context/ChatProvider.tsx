@@ -4,9 +4,7 @@ import React, {
   useContext,
   useState,
   ReactNode,
-  useRef,
-  RefObject,
-  use,
+
 } from "react";
 import { useEffect } from "react";
 export type ChatHistory = {
@@ -44,18 +42,38 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     const eventSource = new EventSource("/chat");
-    eventSource.addEventListener("response", (event: MessageEvent) => {
+
+    const handleResponse = (event: MessageEvent) => {
       const data = JSON.parse(event.data) as PlayfieldEventResponse;
       addMessage(data);
-    });
-    eventSource.addEventListener("error", (event: MessageEvent) => {
+    }
+
+    eventSource.addEventListener("response", handleResponse);
+
+    const handleError = (event: MessageEvent) => {
       console.error("EventSource failed:", event);
-    });
-    eventSource.addEventListener("reset", (event: MessageEvent) => {
+    }
+    eventSource.addEventListener("error", handleError);
+
+
+    const handleReset = (event: MessageEvent) => {
+      console.log("Resetting chat");
       window.location.reload();
-    });
+    }
+    eventSource.addEventListener("reset", handleReset);
+
+
     // terminating the connection on component unmount
-    return () => eventSource.close();
+    return () => {
+      // Remove the event listeners to prevent memory leaks
+      eventSource.removeEventListener("response", handleResponse);
+      eventSource.removeEventListener("error", handleError);
+      eventSource.removeEventListener("reset", handleReset);
+
+      // Close the event source when the component unmounts
+      eventSource.close();
+
+    };
   }, []);
 
   useEffect(() => {
@@ -90,9 +108,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         m += message.message.content;
         const newHistory = prev.history[message.name]
           ? [
-              ...prev.history[message.name],
-              { content: m, created_at: message.created_at },
-            ]
+            ...prev.history[message.name],
+            { content: m, created_at: message.created_at },
+          ]
           : [{ content: m, created_at: message.created_at }];
         if (newHistory.length > 20) {
           newHistory.shift();
